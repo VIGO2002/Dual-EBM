@@ -35,7 +35,7 @@ class Trainer(BaseModel):
                     params.append(param)
         else:
             params = list(self.model.parameters())
-        if opt.optim == "adam":
+        if opt.optim in ("adam", "adamw"):
             self.optimizer = torch.optim.AdamW(
                 params, lr=opt.lr, betas=(opt.beta1, 0.999),
                 weight_decay=opt.weight_decay)
@@ -43,7 +43,7 @@ class Trainer(BaseModel):
             self.optimizer = torch.optim.SGD(
                 params, lr=opt.lr, momentum=0.9, weight_decay=opt.weight_decay)
         else:
-            raise ValueError("optim must be adam or sgd")
+            raise ValueError("optim must be adamw, adam (legacy), or sgd")
         self.model.to(self.device)
         self.scheduler = None
 

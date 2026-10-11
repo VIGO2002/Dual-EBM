@@ -50,3 +50,9 @@ and SVD settings. Their cosine scheduler is advanced per training epoch,
 not as UFD's paper LambdaLR. They still require compatible third-party
 dependencies and a CUDA GPU. Their published provenance is described in
 `DeepfakeBench/README.md`.
+
+## Directory naming
+
+The historical `UniversalFakeDetect_Benchmark - 副本/` directory was
+renamed to `UFD_Benchmark/` for clarity. Its internal file structure
+and the original local dataset paths remain intact.

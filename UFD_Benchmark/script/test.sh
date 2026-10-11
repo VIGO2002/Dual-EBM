@@ -2,7 +2,7 @@
 set -euo pipefail
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 export PYTHONPATH="$REPO_ROOT:${PYTHONPATH:-}"
-cd "$REPO_ROOT/UniversalFakeDetect_Benchmark - 副本"
+cd "$REPO_ROOT/UFD_Benchmark"
 if [ "$#" -ne 1 ]; then
     echo "Usage: bash script/test.sh /path/to/model_epoch_N.pth" >&2
     exit 2

@@ -8,5 +8,5 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
-      - run: python -m compileall -q dual_ebm 'UniversalFakeDetect_Benchmark - 副本' DeepfakeBench tests
-      - run: bash -n 'UniversalFakeDetect_Benchmark - 副本/script/train_svd.sh' 'UniversalFakeDetect_Benchmark - 副本/script/test.sh'
+      - run: python -m compileall -q dual_ebm 'UFD_Benchmark' DeepfakeBench tests
+      - run: bash -n 'UFD_Benchmark/script/train_svd.sh' 'UFD_Benchmark/script/test.sh'

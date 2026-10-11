@@ -2,7 +2,7 @@
 set -euo pipefail
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 export PYTHONPATH="$REPO_ROOT:${PYTHONPATH:-}"
-cd "$REPO_ROOT/UniversalFakeDetect_Benchmark - 副本"
+cd "$REPO_ROOT/UFD_Benchmark"
 if [ "$#" -ne 1 ]; then
     echo "Usage: bash script/train_svd.sh /absolute/path/to/held_out_progan" >&2
     echo "The directory must contain 0_real and 1_fake classes, held out from training." >&2

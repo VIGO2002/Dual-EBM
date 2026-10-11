@@ -7,7 +7,7 @@ class TrainOptions(BaseOptions):
         parser = BaseOptions.initialize(self, parser)
         parser.add_argument('--earlystop_epoch', type=int, default=5)
         parser.add_argument('--data_aug', action='store_true', help='if specified, perform additional data augmentation (photometric, blurring, jpegging)')
-        parser.add_argument('--optim', type=str, default='adam', help='optim to use [sgd, adam]')
+        parser.add_argument('--optim', type=str, default='adamw', help='optimizer: adamw, legacy adam alias, or sgd')
         parser.add_argument('--new_optim', action='store_true', help='new optimizer instead of loading the optim state')
         parser.add_argument('--loss_freq', type=int, default=500, help='frequency of showing loss on tensorboard')
         parser.add_argument('--save_epoch_freq', type=int, default=1, help='frequency of saving checkpoints at the end of epochs')
@@ -24,7 +24,7 @@ class TrainOptions(BaseOptions):
         # 1. 噪声注入标准差：你在 DeepfakeBench 中验证 0.02 效果最好
         parser.add_argument('--noise_std', type=float, default=0.02, help='standard deviation for noise injection in Dual-EBM')
         
-        # 2. 预热步数：有助于双头能量模型在训练初期稳定收敛
+        # Paper protocol: no warmup.
         parser.add_argument('--warmup_steps', type=int, default=0, help='paper protocol: no warmup')
 
         parser.add_argument('--val_root', type=str, default=None)

@@ -1,84 +1,92 @@
-# Dual-EBM: Class-Conditional Energy Decision Modeling
+# Dual-EBM: Class-Conditional Energy Decision Modeling for AI-Generated Image Detection
 
-**Author:** Chenwei He (何晨炜) · University of Electronic Science and Technology of China
+**Chenwei He (何晨炜)** · University of Electronic Science and Technology of China
 
-**Paper:** *Class-Conditional Energy Decision Modeling for Generalizable
-AI-Generated Image Detection*, Chenwei He and Ke Qin.
-IEEE ICASSP 2027 submission (**under review**, not accepted).
+**Paper:** *Class-Conditional Energy Decision Modeling for Generalizable AI-Generated Image Detection* — Chenwei He and Ke Qin. **IEEE ICASSP 2027 submission (under review)**.
 
-Dual-EBM learns independently parameterized real/fake energy functions
-over a shared CLIP latent representation. Training combines
-classification on negative energies, an inter-head margin and
-consistency under local Gaussian perturbations. Inference uses one
-clean forward pass and predicts the lower-energy class.
+Dual-EBM revisits the final decision layer of AI-generated image detectors. It models real and generated-image compatibility using **two independently parameterized energy heads** instead of a shared classifier. The objective combines negative-energy classification, an inter-head margin and local consistency under Gaussian perturbations in latent space.
 
-## Paper-reported results
-
-| Benchmark | Training source | Reported metric |
-|---|---|---|
-| UniversalFakeDetect | ProGAN | mAP **99.53%**, worst AP **95.11%** |
-| GenImage | SDv1.4 | mAcc **93.2%** |
-| AIGIBench (no target retraining) | ProGAN | AP **79.68%** |
-
-These are **paper-reported** numbers. The cleanup branch has not yet
-been retrained or verified to reproduce them.
-
-## Architecture
+## Method
 
 ```text
-Image → pretrained CLIP ViT-L/14 → shared 1024→512 latent projection
-                                   ├─ E_real : 512→256→1
-                                   └─ E_fake : 512→256→1
-Clean logits = [-E_real, -E_fake]
-Loss = CE + 0.5 × conditional margin (m=5) + 0.1 × consistency
+Input image
+    │
+CLIP ViT-L/14 backbone + SVD adaptation (rank ratio 0.25)
+    │
+Shared latent projection (1024 → 512)
+    ├── Real energy head (512 → 256 → 1) ── E_real
+    └── Fake energy head (512 → 256 → 1) ── E_fake
+                                             
+Logits:     [−E_real, −E_fake]
+Inference:  predict the class with lower energy
+Training:   cross entropy + 0.5 × margin loss + 0.1 × consistency loss
 ```
 
-## Repository guide
+The perturbation branch operates **only during training**; inference requires one clean forward pass.
 
-- `dual_ebm/` — original decision module, losses, and SVD adaptation
-- `configs/` — paper-stated hyperparameters
-- `UniversalFakeDetect_Benchmark - 副本/` — historical UFD experiments
-- `DeepfakeBench/` — **Chenwei He's Dual-EBM deepfake extension**, built on the
-  upstream DeepfakeBench framework; see [module notes](DeepfakeBench/README.md)
-- `tests/` — synthetic correctness checks without downloading datasets
-- `docs/reproducibility.md` — protocol provenance and open caveats
+## Core implementation — start here
 
-## Setup and UFD training
+| Component | Source | What it demonstrates |
+|---|---|---|
+| **Dual energy heads** | [`dual_ebm/model.py`](dual_ebm/model.py) | Shared projection, independent real/fake energies, learnable perturbation |
+| **Training objectives** | [`dual_ebm/losses.py`](dual_ebm/losses.py) | Paper Eqs. (3)–(5): classification, class-conditional margin, consistency |
+| **SVD adaptation** | [`dual_ebm/svd.py`](dual_ebm/svd.py) | Attention-weight residual decomposition |
+| **Optimization** | [`UFD_Benchmark/models/trainer.py`](UFD_Benchmark/models/trainer.py) | Trainable parameters, optimizer, gradient clipping |
+| **Deepfake extension** | [`DeepfakeBench/training/detectors/effort_detector.py`](DeepfakeBench/training/detectors/effort_detector.py) | Separate deepfake detection adaptation |
 
-Install a CUDA-compatible version of PyTorch, then:
+## Reported results
+
+| Benchmark | Training source | Manuscript result |
+|---|---|---|
+| UniversalFakeDetect | ProGAN | **99.53% mAP / 95.11% Worst-Case AP** |
+| GenImage | Stable Diffusion v1.4 | **93.2% mean accuracy** |
+| AIGIBench | ProGAN; no target-specific retraining | **79.68% AP** |
+
+These results are **reported in the submitted paper**, not newly reproduced from this reorganized code. The additional Deepfake detection experiments were not included in the paper due to space limitations.
+
+## Repository layout
+
+```text
+Dual-EBM/
+├── dual_ebm/                # Main algorithm: energy heads, losses, SVD
+├── configs/                 # Manuscript hyperparameters
+├── UFD_Benchmark/           # UFD training and evaluation
+├── DeepfakeBench/           # Additional deepfake research adaptation
+├── tests/                   # Synthetic model tests
+├── docs/                    # Reproducibility details
+├── requirements.txt
+└── THIRD_PARTY_NOTICES.md
+```
+
+## Setup and usage
+
+Use Python 3.10+ and a compatible PyTorch/CUDA installation:
 
 ```bash
 git clone https://github.com/VIGO2002/Dual-EBM.git
 cd Dual-EBM
 pip install -r requirements.txt
-bash 'UniversalFakeDetect_Benchmark - 副本/script/train_svd.sh' \
-    /root/autodl-tmp/datasets/CNNDetection/val/progan
-```
-
-The example validation path must be checked locally; it is not guaranteed to exist.\nThe held-out validation folder **must be ProGAN source data** with
-`0_real` and `1_fake` directories. Never select a checkpoint on
-unseen-generator test data. Paths to the author's local datasets and
-pretrained weights are deliberately unchanged.
-
-```bash
-bash 'UniversalFakeDetect_Benchmark - 副本/script/test.sh' \
-    /path/to/model_epoch_N.pth
 python -m unittest discover -s tests -v
 ```
 
-**Reproduction caveat:** The manuscript specifies linear decay followed
-by cosine restarts, but omits numerical phase endpoints. Current defaults
-for these undocumented parameters are provisional. See
-[reproducibility notes](docs/reproducibility.md).
+UFD training uses the author's local dataset root at `/root/autodl-tmp/datasets/CNNDetection`. The script requires an **independently held-out ProGAN validation directory** containing `0_real/` and `1_fake/`:
 
-## Credits / provenance
+```bash
+bash UFD_Benchmark/script/train_svd.sh /absolute/path/to/held_out_progan
+```
 
-Original Dual-EBM contribution: **Chenwei He**.
-**Deepfake extension and adaptation of the detector/training workflow:** **Chenwei He**.
-The Deepfake evaluation work is distinct from the experiments reported in the
-five-page ICASSP manuscript.
-The benchmark adaptations incorporate code from
-[UniversalFakeDetect](https://github.com/WisconsinAIVision/UniversalFakeDetect)
-and [DeepfakeBench](https://github.com/SCLBD/DeepfakeBench).
-Their original attribution and applicable licenses should be preserved;
-upstream contributors are not the authors of the new Dual-EBM method.
+Evaluation requires a trained checkpoint:
+
+```bash
+bash UFD_Benchmark/script/test.sh /path/to/model_epoch_N.pth
+```
+
+The local CLIP ViT-L/14 weights at `/root/autodl-tmp/pretrained_models/clip-vit-large-patch14` are preferred when present; otherwise a public pretrained model identifier is used. Datasets and checkpoints are not distributed here.
+
+**Reproduction caveat:** The manuscript does not give every numerical phase value for its step-wise LambdaLR schedule. These settings remain **provisional** in the reorganized code, which has **not** undergone full original-checkpoint or end-to-end numerical equivalence testing. See [reproducibility notes](docs/reproducibility.md).
+
+## Authorship and upstream credits
+
+**Dual-EBM research, algorithm implementation, experiments and Deepfake adaptation:** **Chenwei He (何晨炜)**.
+
+Benchmark infrastructure incorporates adapted components from [UniversalFakeDetect](https://github.com/WisconsinAIVision/UniversalFakeDetect) and [DeepfakeBench](https://github.com/SCLBD/DeepfakeBench). Upstream framework authorship is distinct from the novel Dual-EBM contribution. Their original license/attribution terms remain applicable; see [third-party notices](THIRD_PARTY_NOTICES.md).
