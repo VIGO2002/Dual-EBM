@@ -34,3 +34,19 @@ compare a fixed-batch logit tensor with the original hook-based code,
 then verify a strict state_dict load. Existing weights were produced
 by historical scripts; updating the training code does not retroactively
 change those experiments.
+
+## Source-only validation guard
+
+UFD training requires an explicit `--val_root` containing exactly
+`0_real` and `1_fake` class folders. The caller must confirm that
+the samples were held out from training and originate only from ProGAN.
+The example `/root/autodl-tmp/datasets/CNNDetection/val/progan` is a
+suggested local directory layout, not a verified existing path.
+
+## Deepfake auxiliary training
+
+The separate DeepfakeBench scripts retain their own historical optimizer
+and SVD settings. Their cosine scheduler is advanced per training epoch,
+not as UFD's paper LambdaLR. They still require compatible third-party
+dependencies and a CUDA GPU. Their published provenance is described in
+`DeepfakeBench/README.md`.

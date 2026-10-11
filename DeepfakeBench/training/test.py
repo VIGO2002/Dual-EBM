@@ -48,7 +48,7 @@ args = parser.parse_args()
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-on_2060 = "2060" in torch.cuda.get_device_name()
+on_2060 = torch.cuda.is_available() and "2060" in torch.cuda.get_device_name()
 def init_seed(config):
     if config['manualSeed'] is None:
         config['manualSeed'] = random.randint(1, 10000)

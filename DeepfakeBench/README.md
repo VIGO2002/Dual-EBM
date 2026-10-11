@@ -49,3 +49,10 @@ been revalidated against the reorganized core module in this branch.
 Do not equate this directory with a clean-room reimplementation of
 all DeepfakeBench infrastructure. It is a research adaptation with
 explicit upstream provenance.
+
+## Correctness notes (cleanup branch)
+
+- Fixed the historical duplicate final scheduler step in `training/train.py`.
+- Defensive handling for short/empty training data loaders.
+- Energy tensors retain batch dimensions when batch size equals one.
+- Auxiliary settings remain distinct from the main UFD paper protocol.

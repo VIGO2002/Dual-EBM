@@ -286,7 +286,7 @@ if __name__ == '__main__':
     model = get_model(opt.arch, opt)
     if opt.use_svd:
         state_dict = torch.load(opt.ckpt, map_location='cpu')['model']
-        model.load_state_dict(state_dict)
+        model.load_state_dict(state_dict, strict=True)
     else:
         state_dict = torch.load(opt.ckpt, map_location='cpu')['model']
         model.load_state_dict(state_dict, strict=True)
@@ -332,7 +332,7 @@ if __name__ == '__main__':
         f_acc0_avg += f_acc0
         acc0_avg += acc0
         r_acc1_avg += r_acc1
-        f_acc1_avg += r_acc1
+        f_acc1_avg += f_acc1
         acc1_avg += acc1
 
         with open( os.path.join(opt.result_folder,'ap.txt'), 'a') as f:

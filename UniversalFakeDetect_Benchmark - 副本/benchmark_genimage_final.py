@@ -1,3 +1,5 @@
+# NOTE: Historical cross-source script evaluating a ProGAN-trained checkpoint.
+# It does NOT reproduce the paper's SDv1.4-trained GenImage protocol.
 import os
 import torch
 import torch.nn as nn

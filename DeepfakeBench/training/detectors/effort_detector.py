@@ -216,8 +216,8 @@ class EffortDetector(nn.Module):
         label = data_dict['label']
         
         logits = pred_dict['logits']
-        e_real = pred_dict['e_real'].squeeze()
-        e_fake = pred_dict['e_fake'].squeeze()
+        e_real = pred_dict['e_real'].reshape(-1)
+        e_fake = pred_dict['e_fake'].reshape(-1)
         
         # --- 1. Cross Entropy Loss (主导分类任务) ---
         loss_cls = F.cross_entropy(logits, label)
@@ -244,8 +244,8 @@ class EffortDetector(nn.Module):
         # --- 3. Stability/Smoothness Loss (基于噪声) ---
         loss_smooth = 0.0
         if self.training and 'e_real_noisy' in pred_dict:
-            e_real_noisy = pred_dict['e_real_noisy'].squeeze()
-            e_fake_noisy = pred_dict['e_fake_noisy'].squeeze()
+            e_real_noisy = pred_dict['e_real_noisy'].reshape(-1)
+            e_fake_noisy = pred_dict['e_fake_noisy'].reshape(-1)
             # 强迫能量函数在局部邻域内保持平滑
             loss_smooth = F.mse_loss(e_real, e_real_noisy) + F.mse_loss(e_fake, e_fake_noisy)
         

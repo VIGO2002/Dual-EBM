@@ -254,9 +254,10 @@ class Trainer(object):
 
         #times_per_epoch=4
 
-        test_step = len(train_data_loader) // times_per_epoch    # test 10 times per epoch
+        test_step = max(1, len(train_data_loader) // times_per_epoch)  # at most 2 evaluations per epoch
         step_cnt = epoch * len(train_data_loader)
 
+        test_best_metric = None  # also defined when the loader has zero batches
         # save the training data_dict
         data_dict = train_data_loader.dataset.data_dict
         self.save_data_dict('train', data_dict, ','.join(self.config['train_dataset']))

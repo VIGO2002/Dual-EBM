@@ -106,7 +106,12 @@ if __name__ == '__main__':
     data_loader = create_dataloader(opt)
 
     # Held-out ProGAN validation, never unseen-generator UFD test domains.
-    val_root = opt.val_root or os.path.join(opt.wang2020_data_path, 'val')
+    if not opt.val_root:
+        raise ValueError(
+            "Pass --val_root pointing to held-out ProGAN-only 0_real/1_fake folders. "
+            "Never use UFD unseen-generator validation/test images for model selection."
+        )
+    val_root = opt.val_root
     if not os.path.isdir(val_root):
         raise FileNotFoundError(
             f"ProGAN source validation directory not found: {val_root}. "
@@ -118,6 +123,11 @@ if __name__ == '__main__':
                              (0.26862954, 0.26130258, 0.27577711))
     ])
     val_dataset = BinaryImageFolder(val_root, transform=val_transform)
+    if set(val_dataset.classes) != {'0_real', '1_fake'}:
+        raise ValueError(
+            f"Expected precisely 0_real and 1_fake directories from held-out "
+            f"ProGAN data, got: {val_dataset.classes}"
+        )
     if len(val_dataset) == 0:
         raise ValueError(f"Empty validation dataset: {val_root}")
     val_loader = DataLoader(val_dataset, batch_size=opt.batch_size,

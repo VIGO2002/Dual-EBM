@@ -52,10 +52,10 @@ git clone https://github.com/VIGO2002/Dual-EBM.git
 cd Dual-EBM
 pip install -r requirements.txt
 bash 'UniversalFakeDetect_Benchmark - 副本/script/train_svd.sh' \
-    /root/autodl-tmp/datasets/CNNDetection/val
+    /root/autodl-tmp/datasets/CNNDetection/val/progan
 ```
 
-The held-out validation folder **must be ProGAN source data** with
+The example validation path must be checked locally; it is not guaranteed to exist.\nThe held-out validation folder **must be ProGAN source data** with
 `0_real` and `1_fake` directories. Never select a checkpoint on
 unseen-generator test data. Paths to the author's local datasets and
 pretrained weights are deliberately unchanged.

@@ -3,7 +3,12 @@ set -euo pipefail
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 export PYTHONPATH="$REPO_ROOT:${PYTHONPATH:-}"
 cd "$REPO_ROOT/UniversalFakeDetect_Benchmark - 副本"
-VAL_ROOT="${1:-/root/autodl-tmp/datasets/CNNDetection/val}"
+if [ "$#" -ne 1 ]; then
+    echo "Usage: bash script/train_svd.sh /absolute/path/to/held_out_progan" >&2
+    echo "The directory must contain 0_real and 1_fake classes, held out from training." >&2
+    exit 2
+fi
+VAL_ROOT="$1"
 python train.py \
   --name effort_universal_repro \
   --arch CLIP:ViT-L/14_svd --fix_backbone --use_svd \
