@@ -255,7 +255,7 @@ def main():
     trainer = Trainer(config, model, optimizer, scheduler, logger, metric_scoring)
 
     # start training
-    for epoch in range(config['start_epoch'], config['nEpochs'] + 1):
+    for epoch in range(config['start_epoch'], config['nEpochs']):
         trainer.model.epoch = epoch
         best_metric = trainer.train_epoch(
                     epoch=epoch,
@@ -264,6 +264,9 @@ def main():
                 )
         if best_metric is not None:
             logger.info(f"===> Epoch[{epoch}] end with testing {metric_scoring}: {parse_metric_for_print(best_metric)}!")
+        # Historical DeepfakeBench scheduler uses epoch-based updates.
+        if scheduler is not None and not config.get('SWA', False):
+            scheduler.step()
     logger.info("Stop Training on best Testing metric {}".format(parse_metric_for_print(best_metric)))
     # update
     if 'svdd' in config['model_name']:

@@ -22,9 +22,9 @@ def get_model(arch, opt):
         return ClipModel(
             name=VALID_NAMES[arch],
             num_classes=1,
-            fix_backbone=opt.fix_backbone, # 传入 fix_backbone
-            use_svd=opt.use_svd,           # 传入 use_svd (关键!)
-            noise_std=opt.noise_std,       # 传入 noise_std (关键!)
+            fix_backbone=getattr(opt, 'fix_backbone', True), # 传入 fix_backbone
+            use_svd=getattr(opt, 'use_svd', True),           # 传入 use_svd (关键!)
+            noise_std=getattr(opt, 'noise_std', 0.02),       # 传入 noise_std (关键!)
             svd_rank_ratio=0.25            # 可以写死或者从 opt 读
         )
     else:

@@ -42,10 +42,12 @@ class BinaryImageFolder(datasets.ImageFolder):
         
         # 强制逻辑：只要路径包含 '1_fake' 或 'fake' 就是 1，否则是 0
         # 这种逻辑适配 wang2020 数据集的通常结构
-        if '1_fake' in path or 'fake' in path.lower():
+        if '1_fake' in os.path.normpath(path).lower().split(os.sep):
             target = 1
-        else:
+        elif '0_real' in os.path.normpath(path).lower().split(os.sep):
             target = 0
+        else:
+            raise ValueError(f"Validation item missing class label: {path}")
         
         sample = self.loader(path)
         if self.transform is not None:
@@ -103,37 +105,24 @@ if __name__ == '__main__':
     
     data_loader = create_dataloader(opt)
 
-    # --- [Auto-Patch] 验证集加载修复 ---
-    print("🛡️ Switching to BinaryImageFolder for Validation...")
-    
+    # Held-out ProGAN validation, never unseen-generator UFD test domains.
+    val_root = opt.val_root or os.path.join(opt.wang2020_data_path, 'val')
+    if not os.path.isdir(val_root):
+        raise FileNotFoundError(
+            f"ProGAN source validation directory not found: {val_root}. "
+            "Use --val_root with held-out 0_real and 1_fake subfolders.")
     val_transform = transforms.Compose([
         transforms.Resize(256, interpolation=transforms.InterpolationMode.BICUBIC),
-        transforms.CenterCrop(224),
-        transforms.ToTensor(),
-        transforms.Normalize((0.48145466, 0.4578275, 0.40821073), (0.26862954, 0.26130258, 0.27577711))
+        transforms.CenterCrop(224), transforms.ToTensor(),
+        transforms.Normalize((0.48145466, 0.4578275, 0.40821073),
+                             (0.26862954, 0.26130258, 0.27577711))
     ])
-    
-    val_root = os.path.join(opt.wang2020_data_path, 'val')
-    if not os.path.exists(val_root):
-        alt_root = opt.wang2020_data_path.replace('train', 'val')
-        if os.path.exists(alt_root):
-            val_root = alt_root
-        else:
-            val_root = opt.wang2020_data_path 
-
-    try:
-        # 使用自定义的 BinaryImageFolder
-        val_dataset = BinaryImageFolder(root=val_root, transform=val_transform)
-        print(f"✅ [Binary Loader] Successfully indexed {len(val_dataset)} images!")
-        # 简单检查一下
-        sample_path, sample_label = val_dataset.samples[0]
-        print(f"   Sample check: {os.path.basename(sample_path)} -> Label {sample_label} (Should be 0 for real)")
-        
-        val_loader = DataLoader(val_dataset, batch_size=opt.batch_size, shuffle=False, num_workers=4)
-    except Exception as e:
-        print(f"⚠️ Loader Failed: {e}")
-        val_loader = create_dataloader(val_opt)
-    # ----------------------------------------------------------------
+    val_dataset = BinaryImageFolder(val_root, transform=val_transform)
+    if len(val_dataset) == 0:
+        raise ValueError(f"Empty validation dataset: {val_root}")
+    val_loader = DataLoader(val_dataset, batch_size=opt.batch_size,
+                            shuffle=False, num_workers=opt.num_threads)
+    model.configure_scheduler(len(data_loader))
 
     train_writer = SummaryWriter(os.path.join(opt.checkpoints_dir, opt.name, "train"))
     val_writer = SummaryWriter(os.path.join(opt.checkpoints_dir, opt.name, "val"))

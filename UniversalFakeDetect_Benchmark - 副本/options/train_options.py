@@ -15,9 +15,9 @@ class TrainOptions(BaseOptions):
         parser.add_argument('--last_epoch', type=int, default=-1, help='starting epoch count for scheduler intialization')
         parser.add_argument('--train_split', type=str, default='train', help='train, val, test, etc')
         parser.add_argument('--val_split', type=str, default='val', help='train, val, test, etc')
-        parser.add_argument('--niter', type=int, default=100, help='total epoches')
+        parser.add_argument('--niter', type=int, default=15, help='total epochs')
         parser.add_argument('--beta1', type=float, default=0.9, help='momentum term of adam')
-        parser.add_argument('--lr', type=float, default=0.0001, help='initial learning rate for adam')
+        parser.add_argument('--lr', type=float, default=0.0002, help='initial learning rate for adam')
         # ============================================================
         # 【新增】Ours: Dual-EBM 核心参数
         # ============================================================
@@ -25,7 +25,16 @@ class TrainOptions(BaseOptions):
         parser.add_argument('--noise_std', type=float, default=0.02, help='standard deviation for noise injection in Dual-EBM')
         
         # 2. 预热步数：有助于双头能量模型在训练初期稳定收敛
-        parser.add_argument('--warmup_steps', type=int, default=500, help='warmup steps')
+        parser.add_argument('--warmup_steps', type=int, default=0, help='paper protocol: no warmup')
 
+        parser.add_argument('--val_root', type=str, default=None)
+        parser.add_argument('--grad_clip', type=float, default=5.0)
+        parser.add_argument('--energy_margin', type=float, default=5.0)
+        parser.add_argument('--lambda_margin', type=float, default=0.5)
+        parser.add_argument('--lambda_smooth', type=float, default=0.1)
+        # Explicitly provisional: paper does not specify exact stage lengths.
+        parser.add_argument('--linear_end', type=float, default=0.5)
+        parser.add_argument('--restart_epochs', type=int, default=4)
+        parser.add_argument('--minimum_lr_factor', type=float, default=0.01)
         self.isTrain = True
         return parser

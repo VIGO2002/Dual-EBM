@@ -84,7 +84,7 @@ def load_model(epoch, device):
             else:
                 new_state_dict[k] = v
             
-        model.load_state_dict(new_state_dict, strict=False)
+        model.load_state_dict(new_state_dict, strict=True)
         model.to(device)
         model.eval()
         return model

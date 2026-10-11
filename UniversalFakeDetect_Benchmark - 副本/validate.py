@@ -275,7 +275,9 @@ if __name__ == '__main__':
     parser.add_argument('--gaussian_sigma', type=int, default=None, help="0,1,2,3,4.     Used to test robustness of our model. Not apply if None")
     
     parser.add_argument('--use_svd', action='store_true')
-    parser.add_argument('--use_lora', action='store_true') 
+    parser.add_argument('--use_lora', action='store_true')
+    parser.add_argument('--noise_std', type=float, default=0.02)
+    parser.add_argument('--fix_backbone', action='store_true') 
 
     opt = parser.parse_args()
 
@@ -287,7 +289,7 @@ if __name__ == '__main__':
         model.load_state_dict(state_dict)
     else:
         state_dict = torch.load(opt.ckpt, map_location='cpu')['model']
-        model.fc.load_state_dict(state_dict)
+        model.load_state_dict(state_dict, strict=True)
     
     print ("Model loaded..")
     model.eval()

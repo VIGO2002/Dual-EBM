@@ -1,8 +1,12 @@
 #!/usr/bin/env bash
-
-PYTHONPATH="$(dirname $0)/..":$PYTHONPATH \ 
-CUDA_VISIBLE_DEVICES=0 python validate.py \
-  --arch CLIP:ViT-L/14_svd \
-  --ckpt checkpoints/clip_vitl14_svd/model_iters_18000.pth \
-  --result_folder results/clip_vitl14_svd/iters_18000 \
-  --use_svd
+set -euo pipefail
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
+export PYTHONPATH="$REPO_ROOT:${PYTHONPATH:-}"
+cd "$REPO_ROOT/UniversalFakeDetect_Benchmark - 副本"
+if [ "$#" -ne 1 ]; then
+    echo "Usage: bash script/test.sh /path/to/model_epoch_N.pth" >&2
+    exit 2
+fi
+CUDA_VISIBLE_DEVICES="${CUDA_VISIBLE_DEVICES:-0}" python validate.py \
+  --arch CLIP:ViT-L/14_svd --ckpt "$1" \
+  --result_folder results/paper_eval --use_svd --fix_backbone
