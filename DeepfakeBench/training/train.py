@@ -1,6 +1,8 @@
 # author: Zhiyuan Yan
 # email: zhiyuanyan@link.cuhk.edu.cn
 # date: 2023-03-30
+# Dual-EBM research adaptation and subsequent modifications: Chenwei He (何晨炜)
+# Origin: https://github.com/SCLBD/DeepfakeBench (CC BY-NC 4.0)
 # description: training code.
 
 import os
@@ -39,7 +41,7 @@ from logger import create_logger, RankFilter
 
 parser = argparse.ArgumentParser(description='Process some paths.')
 parser.add_argument('--detector_path', type=str,
-                    default='/data/home/zhiyuanyan/DeepfakeBenchv2/training/config/detector/effort.yaml',
+                    default=os.path.join(os.path.dirname(__file__), 'config/detector/effort.yaml'),
                     help='path to detector YAML file')
 parser.add_argument("--train_dataset", nargs="+")
 parser.add_argument("--test_dataset", nargs="+")
@@ -48,7 +50,8 @@ parser.add_argument('--no-save_feat', dest='save_feat', action='store_false', de
 parser.add_argument("--ddp", action='store_true', default=False)
 parser.add_argument('--local_rank', type=int, default=0)
 args = parser.parse_args()
-torch.cuda.set_device(args.local_rank)
+if torch.cuda.is_available():
+    torch.cuda.set_device(args.local_rank)
 
 
 def init_seed(config):
@@ -190,7 +193,7 @@ def main():
     # parse options and load config
     with open(args.detector_path, 'r') as f:
         config = yaml.safe_load(f)
-    with open('./training/config/train_config.yaml', 'r') as f:
+    with open(os.path.join(os.path.dirname(__file__), 'config/train_config.yaml'), 'r') as f:
         config2 = yaml.safe_load(f)
     config.update(config2)
     config['local_rank']=args.local_rank
@@ -254,8 +257,12 @@ def main():
     # prepare the trainer
     trainer = Trainer(config, model, optimizer, scheduler, logger, metric_scoring)
 
+    # Avoid undefined variables for empty/dry-run loops.
+    best_metric = None
+    last_epoch = None
     # start training
-    for epoch in range(config['start_epoch'], config['nEpochs'] + 1):
+    for epoch in range(config['start_epoch'], config['nEpochs']):
+        last_epoch = epoch
         trainer.model.epoch = epoch
         best_metric = trainer.train_epoch(
                     epoch=epoch,
@@ -264,12 +271,18 @@ def main():
                 )
         if best_metric is not None:
             logger.info(f"===> Epoch[{epoch}] end with testing {metric_scoring}: {parse_metric_for_print(best_metric)}!")
-    logger.info("Stop Training on best Testing metric {}".format(parse_metric_for_print(best_metric)))
-    # update
-    if 'svdd' in config['model_name']:
-        model.update_R(epoch)
-    if scheduler is not None:
-        scheduler.step()
+        # Historical DeepfakeBench scheduler uses epoch-based updates.
+        if scheduler is not None and not config.get('SWA', False):
+            scheduler.step()
+    if best_metric is not None:
+        logger.info("Stop Training on best Testing metric {}".format(
+            parse_metric_for_print(best_metric)))
+    else:
+        logger.info("Finished without a measured validation metric.")
+    # Only perform the optional SVDD radius update if an epoch has run.
+    if 'svdd' in config['model_name'] and last_epoch is not None:
+        model.update_R(last_epoch)
+    # The non-SWA epoch scheduler is updated inside the training loop.
 
     # close the tensorboard writers
     for writer in trainer.writers.values():

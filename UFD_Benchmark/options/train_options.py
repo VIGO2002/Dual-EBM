@@ -1,0 +1,40 @@
+from .base_options import BaseOptions
+
+
+class TrainOptions(BaseOptions):
+    def initialize(self, parser):
+        parser.add_argument('--continue_train', action='store_true', help='continue training: load the latest model')
+        parser = BaseOptions.initialize(self, parser)
+        parser.add_argument('--earlystop_epoch', type=int, default=5)
+        parser.add_argument('--data_aug', action='store_true', help='if specified, perform additional data augmentation (photometric, blurring, jpegging)')
+        parser.add_argument('--optim', type=str, default='adamw', help='optimizer: adamw, legacy adam alias, or sgd')
+        parser.add_argument('--new_optim', action='store_true', help='new optimizer instead of loading the optim state')
+        parser.add_argument('--loss_freq', type=int, default=500, help='frequency of showing loss on tensorboard')
+        parser.add_argument('--save_epoch_freq', type=int, default=1, help='frequency of saving checkpoints at the end of epochs')
+        parser.add_argument('--epoch_count', type=int, default=1, help='the starting epoch count, we save the model by <epoch_count>, <epoch_count>+<save_latest_freq>, ...')
+        parser.add_argument('--last_epoch', type=int, default=-1, help='starting epoch count for scheduler intialization')
+        parser.add_argument('--train_split', type=str, default='train', help='train, val, test, etc')
+        parser.add_argument('--val_split', type=str, default='val', help='train, val, test, etc')
+        parser.add_argument('--niter', type=int, default=15, help='total epochs')
+        parser.add_argument('--beta1', type=float, default=0.9, help='momentum term of adam')
+        parser.add_argument('--lr', type=float, default=0.0002, help='initial learning rate for adam')
+        # ============================================================
+        # 【新增】Ours: Dual-EBM 核心参数
+        # ============================================================
+        # 1. 噪声注入标准差：你在 DeepfakeBench 中验证 0.02 效果最好
+        parser.add_argument('--noise_std', type=float, default=0.02, help='standard deviation for noise injection in Dual-EBM')
+        
+        # Paper protocol: no warmup.
+        parser.add_argument('--warmup_steps', type=int, default=0, help='paper protocol: no warmup')
+
+        parser.add_argument('--val_root', type=str, default=None)
+        parser.add_argument('--grad_clip', type=float, default=5.0)
+        parser.add_argument('--energy_margin', type=float, default=5.0)
+        parser.add_argument('--lambda_margin', type=float, default=0.5)
+        parser.add_argument('--lambda_smooth', type=float, default=0.1)
+        # Explicitly provisional: paper does not specify exact stage lengths.
+        parser.add_argument('--linear_end', type=float, default=0.5)
+        parser.add_argument('--restart_epochs', type=int, default=4)
+        parser.add_argument('--minimum_lr_factor', type=float, default=0.01)
+        self.isTrain = True
+        return parser

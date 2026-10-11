@@ -1,0 +1,13 @@
+# Install a PyTorch build compatible with your CUDA version separately.
+torch
+torchvision
+transformers
+numpy
+Pillow
+scikit-learn
+scipy
+tqdm
+pandas
+opencv-python
+tensorboardX
+PyYAML

@@ -1,0 +1,23 @@
+# Paper-stated configuration. The scheduler's exact stage endpoints are unpublished.
+protocol: UFD-ProGAN-only
+backbone: openai/clip-vit-large-patch14
+svd_rank_ratio: 0.25
+projection: [1024, 512]
+energy_heads: [512, 256, 1]
+epochs: 15
+batch_size: 32
+optimizer: AdamW
+lr: 0.0002
+betas: [0.9, 0.999]
+weight_decay: 0.0
+warmup_steps: 0
+gradient_clip: 5.0
+margin: 5.0
+lambda_margin: 0.5
+lambda_consistency: 0.1
+noise_init: 0.02
+noise_limits: [0.001, 0.05]
+jpeg_probability: 0.5
+blur_probability: 0.5
+scheduler: step-wise LambdaLR (linear decay then cosine restarts)
+scheduler_exact_phase_values_known: false
