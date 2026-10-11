@@ -38,7 +38,8 @@ Loss = CE + 0.5 × conditional margin (m=5) + 0.1 × consistency
 - `dual_ebm/` — original decision module, losses, and SVD adaptation
 - `configs/` — paper-stated hyperparameters
 - `UniversalFakeDetect_Benchmark - 副本/` — historical UFD experiments
-- `DeepfakeBench/` — separate framework-based deepfake experiments
+- `DeepfakeBench/` — **Chenwei He's Dual-EBM deepfake extension**, built on the
+  upstream DeepfakeBench framework; see [module notes](DeepfakeBench/README.md)
 - `tests/` — synthetic correctness checks without downloading datasets
 - `docs/reproducibility.md` — protocol provenance and open caveats
 
@@ -73,6 +74,9 @@ for these undocumented parameters are provisional. See
 ## Credits / provenance
 
 Original Dual-EBM contribution: **Chenwei He**.
+**Deepfake extension and adaptation of the detector/training workflow:** **Chenwei He**.
+The Deepfake evaluation work is distinct from the experiments reported in the
+five-page ICASSP manuscript.
 The benchmark adaptations incorporate code from
 [UniversalFakeDetect](https://github.com/WisconsinAIVision/UniversalFakeDetect)
 and [DeepfakeBench](https://github.com/SCLBD/DeepfakeBench).

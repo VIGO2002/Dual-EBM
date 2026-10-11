@@ -1,6 +1,8 @@
 # author: Zhiyuan Yan
 # email: zhiyuanyan@link.cuhk.edu.cn
 # date: 2023-03-30
+# Dual-EBM research adaptation and subsequent modifications: Chenwei He (何晨炜)
+# Origin: https://github.com/SCLBD/DeepfakeBench (CC BY-NC 4.0)
 # description: trainer
 import os
 import sys

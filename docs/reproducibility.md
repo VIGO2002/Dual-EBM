@@ -22,6 +22,12 @@ test=unseen generators. GenImage training=SDv1.4, not ProGAN. Reuse of
 a ProGAN checkpoint does not replicate the published GenImage result.
 Dataset/CLIP absolute local paths are intentionally retained.
 
+**Deepfake extension authorship:** Chenwei He implemented and modified the
+Dual-EBM Deepfake detector and experimental workflow on top of DeepfakeBench.
+Original framework code retains its original attribution under the upstream
+license; the Deepfake extension is not among the evaluations described in
+the conference manuscript.
+
 **Legacy checkpoint validation:** The new SVD module preserves the
 old attention parameter names and shapes. Before using old checkpoints,
 compare a fixed-batch logit tensor with the original hook-based code,

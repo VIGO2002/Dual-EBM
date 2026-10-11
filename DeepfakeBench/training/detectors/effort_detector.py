@@ -1,3 +1,6 @@
+# Dual-EBM detector adaptation and class-conditional energy extensions: Chenwei He (何晨炜)
+# Based on the DeepfakeBench training/evaluation framework.
+# Framework provenance and license: https://github.com/SCLBD/DeepfakeBench
 import os
 import math
 import datetime
